@@ -1,0 +1,44 @@
+In archive /Users/Thomas/Developer/ESP_DRC/build/main/libmain.a:
+
+main.o:     file format elf32-xtensa-le
+
+Sections:
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .iram1.11.literal 00000010  00000000  00000000  00000034  2**2
+                  CONTENTS, ALLOC, LOAD, RELOC, READONLY, CODE
+  1 .literal.app_main 00000054  00000000  00000000  00000044  2**2
+                  CONTENTS, ALLOC, LOAD, RELOC, READONLY, CODE
+  2 .text         00000000  00000000  00000000  00000098  2**0
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  3 .data         00000000  00000000  00000000  00000098  2**0
+                  CONTENTS, ALLOC, LOAD, DATA
+  4 .bss          00000000  00000000  00000000  00000098  2**0
+                  ALLOC
+  5 .rodata.str1.1 00000036  00000000  00000000  00000098  2**0
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA
+  6 .iram1.11     0000001e  00000000  00000000  000000d0  2**2
+                  CONTENTS, ALLOC, LOAD, RELOC, READONLY, CODE
+  7 .text.app_main 000000b8  00000000  00000000  000000f0  2**2
+                  CONTENTS, ALLOC, LOAD, RELOC, READONLY, CODE
+  8 .debug_frame  00000040  00000000  00000000  000001a8  2**2
+                  CONTENTS, RELOC, READONLY, DEBUGGING
+  9 .debug_info   0000046c  00000000  00000000  000001e8  2**0
+                  CONTENTS, RELOC, READONLY, DEBUGGING
+ 10 .debug_abbrev 00000127  00000000  00000000  00000654  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 11 .debug_aranges 00000028  00000000  00000000  0000077b  2**0
+                  CONTENTS, RELOC, READONLY, DEBUGGING
+ 12 .debug_ranges 00000018  00000000  00000000  000007a3  2**0
+                  CONTENTS, RELOC, READONLY, DEBUGGING
+ 13 .debug_line   000002f8  00000000  00000000  000007bb  2**0
+                  CONTENTS, RELOC, READONLY, DEBUGGING
+ 14 .debug_str    000004fb  00000000  00000000  00000ab3  2**0
+                  CONTENTS, READONLY, DEBUGGING
+ 15 .comment      0000003b  00000000  00000000  00000fae  2**0
+                  CONTENTS, READONLY
+ 16 .xtensa.info  00000038  00000000  00000000  00000fe9  2**0
+                  CONTENTS, READONLY
+ 17 .xt.lit       00000010  00000000  00000000  00001021  2**0
+                  CONTENTS, RELOC, READONLY
+ 18 .xt.prop      00000060  00000000  00000000  00001031  2**0
+                  CONTENTS, RELOC, READONLY
