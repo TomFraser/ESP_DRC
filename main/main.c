@@ -14,6 +14,9 @@
 #include "driver/gpio.h"
 #include "esp_log.h"
 
+#include "Serial.h"
+#include "SerialMsg.h"
+
 #define ESP_PWR_CTRL 21
 #define ESP_PWR_STACK 1024
 #define ESP_PWR_PRIO 1
@@ -34,9 +37,9 @@ static void IRAM_ATTR powerBtnHandler(void* arg) {
 void app_main()
 {
     /* Remove those pesky GPIO log messages */
-    esp_log_level_set("*", ESP_LOG_ERROR);
+    esp_log_level_set("*", ESP_LOG_WARN);
 
-    printf("Hello world!\n");
+    ESP_LOGW("INFO", "Main Started\n");
     
     gpio_config_t io_conf;
     io_conf.intr_type = GPIO_PIN_INTR_DISABLE;

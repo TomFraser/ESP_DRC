@@ -5,5 +5,7 @@
 
 PROJECT_NAME := ESP_DRC
 
+EXTRA_COMPONENT_DIRS += ./libs  
+
 include $(IDF_PATH)/make/project.mk
 
