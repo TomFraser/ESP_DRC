@@ -13,12 +13,17 @@ typedef enum MsgType {
     ForceStop
 } MsgType_t;
 
-typedef struct SerialMsg {
+typedef struct SerialHeader {
     uint8_t Sync1;
     uint8_t Sync2;
     uint8_t Type;
     uint8_t Size;
-    void * Data;
-} SerialMsg_t;
+} SerialHeader_t;
+
+typedef struct QueueMsg {
+    uint8_t Type;
+    uint8_t Size;
+    uint8_t* Data;
+} QueueMsg_t
 
 #endif
