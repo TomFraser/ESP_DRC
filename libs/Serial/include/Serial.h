@@ -16,6 +16,8 @@
 #include "SerialMsg.h"
 #include "freertos/queue.h"
 
+#include "../../ESP_common.h"
+
 // ========================================
 //      Definitions
 // ========================================
@@ -23,8 +25,6 @@
 #define UART_TAG "UART"
 
 #define UART_RP UART_NUM_1
-#define UART_TX 17
-#define UART_RX 16
 
 ;
 extern QueueHandle_t uart_rx_queue;

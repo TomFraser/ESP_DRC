@@ -24,6 +24,6 @@ typedef struct QueueMsg {
     uint8_t Type;
     uint8_t Size;
     uint8_t* Data;
-} QueueMsg_t
+} QueueMsg_t;
 
 #endif

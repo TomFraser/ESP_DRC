@@ -18,6 +18,7 @@
 
 #include "Serial.h"
 #include "SerialMsg.h"
+#include "Servo.h"
 
 #define ESP_PWR_CTRL 21
 #define ESP_PWR_STACK 1024
@@ -64,6 +65,8 @@ void app_main()
 
     gpio_set_level(ESP_PWR_CTRL, 1);
 
+    servo_init();
+
     /* Setup Task for Button */
     // TaskHandle_t handle = NULL;
     // static uint8_t pwr_par;
@@ -71,12 +74,17 @@ void app_main()
     // configASSERT(handle);
 
     for(;;) {
-        gpio_set_level(ESP_LED0, 0);
-        gpio_set_level(ESP_LED1, 1);
-        vTaskDelay(1000 / portTICK_RATE_MS);
-        gpio_set_level(ESP_LED0, 1);
-        gpio_set_level(ESP_LED1, 0);
-        vTaskDelay(1000 / portTICK_RATE_MS);
+        // gpio_set_level(ESP_LED0, 0);
+        // gpio_set_level(ESP_LED1, 1);
+        // vTaskDelay(1000 / portTICK_RATE_MS);
+        // gpio_set_level(ESP_LED0, 1);
+        // gpio_set_level(ESP_LED1, 0);
+        // vTaskDelay(1000 / portTICK_RATE_MS);
+
+        control_t control;
+            control.steering = -50;
+            control.speed = 0;
+        servo_update(&control);
     }
     // gpio_set_level(ESP_PWR_CTRL, 0);
 }
