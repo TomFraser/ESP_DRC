@@ -24,14 +24,16 @@ void servo_init() {
         pwm_config2.duty_mode = MCPWM_DUTY_MODE_0;
     mcpwm_init(MCPWM_UNIT_1, MCPWM_TIMER_1, &pwm_config2);
 
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
+
     control_t init_control;
         init_control.steering = 0;
-        init_control.speed = 100;
+        init_control.speed = 20;
     servo_update(&init_control);
-    vTaskDelay(1000);
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
         init_control.speed = 0;
     servo_update(&init_control);
-    vTaskDelay(1000);
+    vTaskDelay(5000 / portTICK_PERIOD_MS);
 }
 
 void servo_update(control_t * control) {

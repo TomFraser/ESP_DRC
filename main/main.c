@@ -83,7 +83,7 @@ void app_main()
 
         control_t control;
             control.steering = -50;
-            control.speed = 0;
+            control.speed = 50;
         servo_update(&control);
     }
     // gpio_set_level(ESP_PWR_CTRL, 0);
