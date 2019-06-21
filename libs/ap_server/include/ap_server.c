@@ -2,16 +2,42 @@
 #include "esp_wifi.h"
 #include "ap_server.h"
 #include "esp_log.h"
+#include "freertos/event_groups.h"
 #include <esp_http_server.h>
+#include "esp_event.h"
+
+#include "lwip/err.h"
+#include "lwip/sys.h"
+#include "tcpip_adapter.h"
+#include "esp_event_loop.h"
+
+#include "../../ESP_common.h"
 
 static const char *TAG = "http_server";
 
-#define ESP_WIFI_SSID      "2TAC DRC Control"
+#define ESP_WIFI_SSID      "WACT^2 Robot"
 #define ESP_WIFI_PASS      "YeetYeet"
 #define MAX_STA_CONN       5
 
 #define NUMBER_OF_STRING 20
 #define MAX_STRING_SIZE 50
+
+static EventGroupHandle_t wifi_event_group;
+
+static esp_err_t event_handler(void *ctx, system_event_t *event)
+{
+    switch (event->event_id) {
+        case SYSTEM_EVENT_AP_STACONNECTED:
+            ESP_LOGW(TAG, "---station joined---");
+            break;
+        case SYSTEM_EVENT_AP_STADISCONNECTED:
+            ESP_LOGW(TAG, "---station leave---");
+            break;
+        default:
+            break;
+    }
+    return ESP_OK;
+}
 
 char terminal[NUMBER_OF_STRING][MAX_STRING_SIZE] = {"2TAC DRC"};
 /* 
@@ -30,7 +56,7 @@ static esp_err_t settings_handler(httpd_req_t *req)
     if (buf_len > 1) {
         buf = malloc(buf_len);
         if (httpd_req_get_url_query_str(req, buf, buf_len) == ESP_OK) {            
-            ESP_LOGI(TAG, "Started with speed value of: %s", buf); //change to do whatever
+            ESP_LOGE(TAG, "Started with speed value of: %s", buf); //change to do whatever
         }
         free(buf);
     }
@@ -60,8 +86,10 @@ static esp_err_t home_handler(httpd_req_t *req)
     buf_len = httpd_req_get_url_query_len(req) + 1;
     if (buf_len > 1) {
         buf = malloc(buf_len);
-        if (httpd_req_get_url_query_str(req, buf, buf_len) == ESP_OK) {    
-            ESP_LOGI(TAG, "%s", buf); //change to do whatever
+        if (httpd_req_get_url_query_str(req, buf, buf_len) == ESP_OK) {
+            char value[2];
+            httpd_query_key_value(buf, "start", (char *) &value, 2); 
+            stop = atoi(value);
         }
         free(buf);
     }
@@ -123,9 +151,11 @@ static void initialise_wifi(void)
         return;
     }
     tcpip_adapter_init();
+    wifi_event_group = xEventGroupCreate();
     ESP_ERROR_CHECK(esp_event_loop_create_default());
     wifi_init_config_t cfg = WIFI_INIT_CONFIG_DEFAULT();
     ESP_ERROR_CHECK( esp_wifi_init(&cfg) );
+    ESP_ERROR_CHECK(esp_event_loop_init(event_handler, NULL));
     ESP_ERROR_CHECK( esp_wifi_set_storage(WIFI_STORAGE_RAM) );
     ESP_ERROR_CHECK( esp_wifi_set_mode(WIFI_MODE_NULL) );
     ESP_ERROR_CHECK( esp_wifi_start() );
@@ -138,7 +168,7 @@ void wifi_init_softap()
     wifi_config_t wifi_config = {
         .ap = {
             .ssid = ESP_WIFI_SSID,
-            .ssid_len = 8,
+            .ssid_len = strlen(ESP_WIFI_SSID),
             .password = ESP_WIFI_PASS,
             .max_connection = MAX_STA_CONN,
             .authmode = WIFI_AUTH_WPA_WPA2_PSK

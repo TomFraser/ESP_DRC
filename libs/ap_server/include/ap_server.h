@@ -1,6 +1,5 @@
 /*
- *  Created on: 15 April. 2019
- *      Author: Li Zhe
+ *      ap_server.h
  */
 
 #ifndef AP_SERVER_H_

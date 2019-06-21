@@ -15,10 +15,12 @@
 #include "esp_spi_flash.h"
 #include "driver/gpio.h"
 #include "esp_log.h"
+#include <nvs_flash.h>
 
 #include "Serial.h"
 #include "SerialMsg.h"
 #include "Servo.h"
+#include "ap_server.h"
 
 #define ESP_PWR_CTRL 21
 #define ESP_PWR_STACK 1024
@@ -29,7 +31,6 @@
 #define ESP_LED0 5
 #define ESP_LED1 18
 
-
 #define GPIO_OUTPUT_PIN_SEL  ((1ULL<<ESP_LED0) | (1ULL<<ESP_LED1) | (1ULL<<ESP_PWR_CTRL))
 #define GPIO_INPUT_PIN_SEL ((1ULL<<ESP_PWR_BTN))
 
@@ -39,6 +40,8 @@ static void IRAM_ATTR powerBtnHandler(void* arg) {
 
 void app_main()
 {
+    nvs_flash_init();
+
     /* Remove those pesky GPIO log messages */
     esp_log_level_set("*", ESP_LOG_WARN);
 
@@ -65,7 +68,11 @@ void app_main()
 
     gpio_set_level(ESP_PWR_CTRL, 1);
 
+    start_http_server();
+
     servo_init();
+
+    stop = 0;
 
     /* Setup Task for Button */
     // TaskHandle_t handle = NULL;
@@ -83,7 +90,12 @@ void app_main()
 
         control_t control;
             control.steering = -50;
+
+        if (stop == 1) {
             control.speed = 50;
+        } else {
+            control.speed = 0;
+        }
         servo_update(&control);
     }
     // gpio_set_level(ESP_PWR_CTRL, 0);

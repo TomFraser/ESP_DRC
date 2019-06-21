@@ -22,7 +22,7 @@
 #define PWR_KILL        19
 #define PWR_INT         21
 
-
+uint8_t stop;
 
 // ========================================
 //      Structs
