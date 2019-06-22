@@ -17,6 +17,7 @@
 #include "freertos/queue.h"
 
 #include "../../ESP_common.h"
+#include "Servo.h"
 
 // ========================================
 //      Definitions

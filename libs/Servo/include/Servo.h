@@ -31,7 +31,7 @@
 /*
         @Task:      Initialises Timer and LEDC lib for Servos
 */
-void servo_init();
+void servo_init(robot_t * robot_);
 
 /*
         @Task:      Sets ESC / Steering servos to those set in a control struct

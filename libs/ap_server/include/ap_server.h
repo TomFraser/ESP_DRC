@@ -5,6 +5,8 @@
 #ifndef AP_SERVER_H_
 #define AP_SERVER_H_
 
-void start_http_server(void);
+#include "../../ESP_common.h"
+
+void start_http_server(robot_t * robot_);
 
 #endif

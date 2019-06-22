@@ -24,6 +24,8 @@ static const char *TAG = "http_server";
 
 static EventGroupHandle_t wifi_event_group;
 
+static robot_t * robot;
+
 static esp_err_t event_handler(void *ctx, system_event_t *event)
 {
     switch (event->event_id) {
@@ -48,7 +50,7 @@ static esp_err_t settings_handler(httpd_req_t *req)
     char*  buf;
     size_t buf_len;
 
-    const char* resp_str = "<head></head><body><h1>Settings</h1><form action='/settings'>Speed:<br><input type='text' name='speed' value='100'><br><br><input type='submit' value='Submit'></form></body>";
+    const char* resp_str = "<head></head><body><h1>Settings</h1><form action='/settings'>Speed:<br><input type='text' name='speed' value='100'><br><br><input type='submit' value='Submit'></form><form style='font-align:center;' action='/'><input type='hidden' name='start' value='1'><input style='background: #48A9A6; color: white; border-style: solid; border-color: #48A9A6; height: 20%; width: 100%; font: bold 50px arial, sans-serif; text-shadow:none;' type='submit' value='START'></form><form action='/'><input type='hidden' name='start' value='0'><input style='background: #D62839; color: white; border-style: solid; border-color: #D62839; height: 20%; width: 100%; font: bold 50px arial, sans-serif; text-shadow:none;' type='submit' value='STOP'></form></body>";
     
     /* Read URL query string length and allocate memory for length + 1,
      * extra byte for null termination */
@@ -56,7 +58,10 @@ static esp_err_t settings_handler(httpd_req_t *req)
     if (buf_len > 1) {
         buf = malloc(buf_len);
         if (httpd_req_get_url_query_str(req, buf, buf_len) == ESP_OK) {            
-            ESP_LOGE(TAG, "Started with speed value of: %s", buf); //change to do whatever
+            char value[4];
+            httpd_query_key_value(buf, "speed", (char *) &value, 4);
+            robot->max_speed = atoi(value);
+            ESP_LOGE(TAG, "Received speed command: %d", robot->max_speed);
         }
         free(buf);
     }
@@ -88,8 +93,9 @@ static esp_err_t home_handler(httpd_req_t *req)
         buf = malloc(buf_len);
         if (httpd_req_get_url_query_str(req, buf, buf_len) == ESP_OK) {
             char value[2];
-            httpd_query_key_value(buf, "start", (char *) &value, 2); 
-            stop = atoi(value);
+            httpd_query_key_value(buf, "start", (char *) &value, 2);
+            robot->stop = atoi(value);
+            ESP_LOGE(TAG, "Received stop command: %d", robot->stop);
         }
         free(buf);
     }
@@ -186,8 +192,10 @@ void wifi_init_softap()
 // ==================================================================================================
 //          Start http server for wifi config setting
 // ==================================================================================================
-void start_http_server()
+void start_http_server(robot_t * robot_)
 {
+    robot = robot_;
+
     wifi_init_softap();
     start_webserver();
 }

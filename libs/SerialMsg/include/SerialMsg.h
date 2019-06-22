@@ -5,12 +5,13 @@
 #include <stdint.h>
 
 typedef enum MsgType {
-    Message = 0,
-    PowerReq,
-    PowerConf,
-    PowerDeny,
-    ForceReset,
-    ForceStop
+    DATA = 0,
+    POWER_REQUEST,
+    POWER_CONFIRM,
+    POWER_DENY,
+    FORCE_RESET,
+    FORCE_STOP,
+    LOG_MESSAGE
 } MsgType_t;
 
 typedef struct SerialHeader {

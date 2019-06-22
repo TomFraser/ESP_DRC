@@ -16,17 +16,19 @@
 #include "driver/gpio.h"
 #include "esp_log.h"
 #include <nvs_flash.h>
+#include "driver/uart.h"
+#include <string.h>
 
 #include "Serial.h"
 #include "SerialMsg.h"
 #include "Servo.h"
 #include "ap_server.h"
 
-#define ESP_PWR_CTRL 21
+#define ESP_PWR_CTRL 19
 #define ESP_PWR_STACK 1024
 #define ESP_PWR_PRIO 1
 
-#define ESP_PWR_BTN 19
+#define ESP_PWR_BTN 21
 
 #define ESP_LED0 5
 #define ESP_LED1 18
@@ -68,11 +70,15 @@ void app_main()
 
     gpio_set_level(ESP_PWR_CTRL, 1);
 
-    start_http_server();
+    robot_t * robot = (robot_t *) malloc(sizeof(robot_t));
+        robot->stop = 0;
+        robot->max_speed = 10;
 
-    servo_init();
+    start_http_server(robot);
 
-    stop = 0;
+    servo_init(robot);
+
+    robot->stop = 0;
 
     /* Setup Task for Button */
     // TaskHandle_t handle = NULL;
@@ -80,24 +86,26 @@ void app_main()
     // xTaskCreate(espPowerButton, "PWR_BTN", ESP_PWR_STACK, &pwr_par, ESP_PWR_PRIO, &handle);
     // configASSERT(handle);
 
+    xTaskCreate((TaskFunction_t) uart_rx_task, "UART Task", 2048, NULL, configMAX_PRIORITIES, NULL);
+
     for(;;) {
-        // gpio_set_level(ESP_LED0, 0);
-        // gpio_set_level(ESP_LED1, 1);
-        // vTaskDelay(1000 / portTICK_RATE_MS);
-        // gpio_set_level(ESP_LED0, 1);
-        // gpio_set_level(ESP_LED1, 0);
-        // vTaskDelay(1000 / portTICK_RATE_MS);
+        gpio_set_level(ESP_LED0, 0);
+        gpio_set_level(ESP_LED1, 1);
+        vTaskDelay(1000 / portTICK_RATE_MS);
+        gpio_set_level(ESP_LED0, 1);
+        gpio_set_level(ESP_LED1, 0);
+        vTaskDelay(1000 / portTICK_RATE_MS);
 
         control_t control;
-            control.steering = -50;
-
-        if (stop == 1) {
-            control.speed = 50;
-        } else {
-            control.speed = 0;
-        }
+        control.steering = -50;
+        control.speed = robot->max_speed;
         servo_update(&control);
+
+        char string[] = "Alistair sucks dick";
+        uart_write_bytes(UART_RP, string, strlen(string));
     }
+
+    free(robot);
     // gpio_set_level(ESP_PWR_CTRL, 0);
 }
 

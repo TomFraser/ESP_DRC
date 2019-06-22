@@ -22,8 +22,6 @@
 #define PWR_KILL        19
 #define PWR_INT         21
 
-uint8_t stop;
-
 // ========================================
 //      Structs
 // ========================================
@@ -34,5 +32,12 @@ typedef struct control {
     uint8_t speed;
 
 }   control_t;
+
+typedef struct robot {
+
+    uint8_t stop;
+    int8_t max_speed;
+
+}   robot_t;
 
 #endif
