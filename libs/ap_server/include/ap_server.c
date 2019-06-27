@@ -32,8 +32,6 @@ static EventGroupHandle_t wifi_event_group;
 
 static robot_t * robot;
 
-static nvs_handle_t nvs_data_handle;
-
 static esp_err_t event_handler(void *ctx, system_event_t *event)
 {
     switch (event->event_id) {
@@ -58,7 +56,7 @@ static esp_err_t settings_handler(httpd_req_t *req)
     char*  buf;
     size_t buf_len;
 
-    const char* resp_str[375];
+    char resp_str[375];
     sprintf(resp_str, "<!DOCTYPE html><html><head><title>WACT² DRC</title></head><body><h1>Settings</h1><form action='/settings'>Speed:<br><input type='text' name='speed' value='%i'><br><br>Steering Offset:<br><input type='text' name='steering' value='%d'><br><input type='submit' value='Submit'></form><form action='/'><br><br><input type='submit' value='<- BACK'></form></body></html>", robot->max_speed, robot->steering_correction); 
 
     /* Read URL query string length and allocate memory for length + 1,

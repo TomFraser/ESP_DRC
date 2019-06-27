@@ -37,6 +37,8 @@
 #define GPIO_OUTPUT_PIN_SEL  ((1ULL<<ESP_LED0) | (1ULL<<ESP_LED1) | (1ULL<<ESP_PWR_CTRL))
 #define GPIO_INPUT_PIN_SEL ((1ULL<<ESP_PWR_BTN))
 
+nvs_handle nvs_data_handle;
+
 static void IRAM_ATTR powerBtnHandler(void* arg) {
     ESP_LOGE("PWR", "BTN PRESSED");
 }
@@ -46,7 +48,6 @@ void app_main()
     robot_t * robot = (robot_t *) malloc(sizeof(robot_t));
         robot->stop = 0;
 
-    nvs_handle_t nvs_data_handle;
     nvs_flash_init();
     nvs_open("storage", NVS_READWRITE, &nvs_data_handle);
     nvs_get_i8(nvs_data_handle, "steering_correction", &(robot->steering_correction));
