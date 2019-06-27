@@ -46,37 +46,36 @@ TaskFunction_t uart_rx_task() {
 
                     while(*bufSize > 0) {
                         uart_read_bytes(UART_RP, syncs, 1, portMAX_DELAY);
-                        ESP_LOGE("GOT BYTE", "%d", (uint8_t) *syncs);
                         
-                        // if (*syncs == header.Sync1) {   // First sync char
-                        //     uart_read_bytes(UART_RP, syncs+1, 1, portMAX_DELAY);
+                        if (*syncs == header.Sync1) {   // First sync char
+                            uart_read_bytes(UART_RP, syncs+1, 1, portMAX_DELAY);
 
-                        //     if (*(syncs+1) == header.Sync2) {
-                        //         // Read both sync char, at start of UART packet
-                        //         uart_read_bytes(UART_RP, ((uint8_t*) (&header)) + 2, 2, portMAX_DELAY);
+                            if (*(syncs+1) == header.Sync2) {
+                                // Read both sync char, at start of UART packet
+                                uart_read_bytes(UART_RP, ((uint8_t*) (&header)) + 2, 2, portMAX_DELAY);
 
-                        //         QueueMsg_t queueMsg;
-                        //         queueMsg.Type = header.Type;
-                        //         queueMsg.Size = header.Size;
-                        //         queueMsg.Data = (uint8_t*) malloc(header.Size); // To be freed after useage
+                                QueueMsg_t queueMsg;
+                                queueMsg.Type = header.Type;
+                                queueMsg.Size = header.Size;
+                                queueMsg.Data = (uint8_t*) malloc(header.Size); // To be freed after useage
 
-                        //         uart_read_bytes(UART_RP, queueMsg.Data, queueMsg.Size, 100);
+                                uart_read_bytes(UART_RP, queueMsg.Data, queueMsg.Size, 100);
 
-                        //         #if DEBUG
-                        //             ESP_LOGI(UART_TAG, "TYPE: %d", queueMsg.Type);
-                        //             ESP_LOGI(UART_TAG, "SIZE: %d", queueMsg.Size);
-                        //             ESP_LOGI(UART_TAG, "DATA:");
-                        //             esp_log_buffer_hex(UART_TAG, queueMsg.Data, queueMsg.Size);
-                        //         #endif
+                                #if DEBUG
+                                    ESP_LOGI(UART_TAG, "TYPE: %d", queueMsg.Type);
+                                    ESP_LOGI(UART_TAG, "SIZE: %d", queueMsg.Size);
+                                    ESP_LOGI(UART_TAG, "DATA:");
+                                    esp_log_buffer_hex(UART_TAG, queueMsg.Data, queueMsg.Size);
+                                #endif
 
-                        //         if (queueMsg.Type == DATA) {
-                        //             servo_update((control_t *) queueMsg.Data);
-                        //             free((control_t *) queueMsg.Data);
-                        //         } else if (queueMsg.Type == LOG_MESSAGE) {
-                        //             // Put on Debug Queue
-                        //         }
-                        //     }
-                        // }
+                                if (queueMsg.Type == DATA) {
+                                    servo_update((control_t *) queueMsg.Data);
+                                    free((control_t *) queueMsg.Data);
+                                } else if (queueMsg.Type == LOG_MESSAGE) {
+                                    // Put on Debug Queue
+                                }
+                            }
+                        }
                         uart_get_buffered_data_len(UART_RP, bufSize);
                     }
                     break;

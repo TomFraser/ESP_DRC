@@ -95,14 +95,6 @@ void app_main()
         gpio_set_level(ESP_LED0, 1);
         gpio_set_level(ESP_LED1, 0);
         vTaskDelay(1000 / portTICK_RATE_MS);
-
-        control_t control;
-        control.steering = -50;
-        control.speed = robot->max_speed;
-        servo_update(&control);
-
-        char string[] = "Alistair sucks dick";
-        uart_write_bytes(UART_RP, string, strlen(string));
     }
 
     free(robot);
