@@ -16,6 +16,7 @@
 #include "driver/gpio.h"
 #include "esp_log.h"
 #include <nvs_flash.h>
+#include <nvs.h>
 #include "driver/uart.h"
 #include <string.h>
 
@@ -42,7 +43,15 @@ static void IRAM_ATTR powerBtnHandler(void* arg) {
 
 void app_main()
 {
+    robot_t * robot = (robot_t *) malloc(sizeof(robot_t));
+        robot->stop = 0;
+
+    nvs_handle_t nvs_data_handle;
     nvs_flash_init();
+    nvs_open("storage", NVS_READWRITE, &nvs_data_handle);
+    nvs_get_i8(nvs_data_handle, "steering_correction", &(robot->steering_correction));
+    nvs_get_i8(nvs_data_handle, "speed_max", &(robot->max_speed));
+    nvs_close(nvs_data_handle);
 
     /* Remove those pesky GPIO log messages */
     esp_log_level_set("*", ESP_LOG_WARN);
@@ -70,10 +79,6 @@ void app_main()
 
     gpio_set_level(ESP_PWR_CTRL, 1);
 
-    robot_t * robot = (robot_t *) malloc(sizeof(robot_t));
-        robot->stop = 0;
-        robot->max_speed = 10;
-
     start_http_server(robot);
 
     servo_init(robot);
@@ -100,4 +105,3 @@ void app_main()
     free(robot);
     // gpio_set_level(ESP_PWR_CTRL, 0);
 }
-

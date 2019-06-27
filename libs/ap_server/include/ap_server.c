@@ -10,6 +10,12 @@
 #include "lwip/sys.h"
 #include "tcpip_adapter.h"
 #include "esp_event_loop.h"
+#include <stdio.h>
+#include "freertos/FreeRTOS.h"
+#include "freertos/task.h"
+#include "esp_system.h"
+#include "nvs_flash.h"
+#include "nvs.h"
 
 #include "../../ESP_common.h"
 
@@ -25,6 +31,8 @@ static const char *TAG = "http_server";
 static EventGroupHandle_t wifi_event_group;
 
 static robot_t * robot;
+
+static nvs_handle_t nvs_data_handle;
 
 static esp_err_t event_handler(void *ctx, system_event_t *event)
 {
@@ -50,7 +58,9 @@ static esp_err_t settings_handler(httpd_req_t *req)
     char*  buf;
     size_t buf_len;
 
-    const char* resp_str = "<!DOCTYPE html><html><head><title>WACT² DRC</title></head><body><h1>Settings</h1><form action='/settings'>Speed:<br><input type='text' name='speed' value='100'><br><br>Steering Offset:<br><input type='text' name='steering' value='100'><br><input type='submit' value='Submit'></form><form action='/'><br><br><input type='submit' value='<- BACK'></form></body></html>";
+    const char* resp_str[375];
+    sprintf(resp_str, "<!DOCTYPE html><html><head><title>WACT² DRC</title></head><body><h1>Settings</h1><form action='/settings'>Speed:<br><input type='text' name='speed' value='%i'><br><br>Steering Offset:<br><input type='text' name='steering' value='%d'><br><input type='submit' value='Submit'></form><form action='/'><br><br><input type='submit' value='<- BACK'></form></body></html>", robot->max_speed, robot->steering_correction); 
+
     /* Read URL query string length and allocate memory for length + 1,
      * extra byte for null termination */
     buf_len = httpd_req_get_url_query_len(req) + 1;
@@ -61,6 +71,11 @@ static esp_err_t settings_handler(httpd_req_t *req)
             httpd_query_key_value(buf, "speed", (char *) &value, 4);
             robot->max_speed = atoi(value);
             ESP_LOGE(TAG, "Received speed command: %d", robot->max_speed);
+
+            nvs_open("storage", NVS_READWRITE, &nvs_data_handle);
+            nvs_set_i8(nvs_data_handle, "speed_max", robot->max_speed);
+            nvs_commit(nvs_data_handle);
+            nvs_close(nvs_data_handle);
         }
         free(buf);
     }

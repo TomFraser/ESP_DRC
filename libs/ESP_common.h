@@ -6,6 +6,9 @@
 
 #include <stdio.h>
 #include <stdint.h>
+#include <nvs_flash.h>
+#include <nvs.h>
+#include "esp_system.h"
 
 // ========================================
 //      Definitions
@@ -37,6 +40,7 @@ typedef struct robot {
 
     uint8_t stop;
     int8_t max_speed;
+    int8_t steering_correction;
 
 }   robot_t;
 
