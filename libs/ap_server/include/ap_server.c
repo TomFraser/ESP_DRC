@@ -15,7 +15,7 @@
 
 static const char *TAG = "http_server";
 
-#define ESP_WIFI_SSID      "WACT^2 Robot"
+#define ESP_WIFI_SSID      "WACT² Robot"
 #define ESP_WIFI_PASS      "YeetYeet"
 #define MAX_STA_CONN       5
 
@@ -41,7 +41,7 @@ static esp_err_t event_handler(void *ctx, system_event_t *event)
     return ESP_OK;
 }
 
-char terminal[NUMBER_OF_STRING][MAX_STRING_SIZE] = {"2TAC DRC"};
+char terminal[NUMBER_OF_STRING][MAX_STRING_SIZE] = {"WACT² DRC"};
 /* 
  * handlers for the web server.
  */
