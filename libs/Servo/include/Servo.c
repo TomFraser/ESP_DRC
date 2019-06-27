@@ -35,17 +35,11 @@ void servo_init(robot_t * robot_) {
     vTaskDelay(1000 / portTICK_PERIOD_MS);
     mcpwm_set_duty_in_us(MCPWM_UNIT_1, MCPWM_TIMER_1, MCPWM_OPR_A, 1000);
     vTaskDelay(5000 / portTICK_PERIOD_MS);
-
-    // Throtle Calibration
-    // mcpwm_set_duty_in_us(MCPWM_UNIT_1, MCPWM_TIMER_1, MCPWM_OPR_A, 1100);
-    // vTaskDelay(1000 / portTICK_PERIOD_MS);
-    // mcpwm_set_duty_in_us(MCPWM_UNIT_1, MCPWM_TIMER_1, MCPWM_OPR_A, 2000);
-    // vTaskDelay(5000 / portTICK_PERIOD_MS);
-    // mcpwm_set_duty_in_us(MCPWM_UNIT_1, MCPWM_TIMER_1, MCPWM_OPR_A, 1000);
-    // vTaskDelay(5000 / portTICK_PERIOD_MS);
 }
 
 void servo_update(control_t * control) {
+    ESP_LOGW("SERVO", "Speed: %i, Steering: %i", control->speed, control->steering);
+
     if (control->speed > robot->max_speed) {
         control->speed = robot->max_speed;
     }
