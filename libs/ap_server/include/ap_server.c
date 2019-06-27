@@ -50,8 +50,7 @@ static esp_err_t settings_handler(httpd_req_t *req)
     char*  buf;
     size_t buf_len;
 
-    const char* resp_str = "<head></head><body><h1>Settings</h1><form action='/settings'>Speed:<br><input type='text' name='speed' value='100'><br><br><input type='submit' value='Submit'></form><form style='font-align:center;' action='/'><input type='hidden' name='start' value='1'><input style='background: #48A9A6; color: white; border-style: solid; border-color: #48A9A6; height: 20%; width: 100%; font: bold 50px arial, sans-serif; text-shadow:none;' type='submit' value='START'></form><form action='/'><input type='hidden' name='start' value='0'><input style='background: #D62839; color: white; border-style: solid; border-color: #D62839; height: 20%; width: 100%; font: bold 50px arial, sans-serif; text-shadow:none;' type='submit' value='STOP'></form></body>";
-    
+    const char* resp_str = "<head></head><body><h1>Settings</h1><form action='/settings'>Speed:<br><input type='text' name='speed' value='100'><br><br>Steering Offset:<input type='text' name='steering' value='100'><input type='submit' value='Submit'></form><form action='/'><input type='submit' value=''></form></body>";
     /* Read URL query string length and allocate memory for length + 1,
      * extra byte for null termination */
     buf_len = httpd_req_get_url_query_len(req) + 1;
@@ -73,7 +72,7 @@ static esp_err_t settings_handler(httpd_req_t *req)
 static esp_err_t terminal_handler(httpd_req_t *req)
 {
     char* resp_str = (char*)malloc(1067 * sizeof(char));
-    sprintf(resp_str, "<head><meta http-equiv='refresh' content='2'></head><body style='font-size=50px;'>%s</body>", terminal[0]);
+    sprintf(resp_str, "<head><meta http-equiv='refresh' content='2'></head><body style='font-size=50px;'>%s<br><form action='/'><input type='submit' value=''></form></body>", terminal[0]);
     httpd_resp_send(req, resp_str, strlen(resp_str));
     
     return ESP_OK;
