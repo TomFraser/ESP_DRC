@@ -56,9 +56,6 @@ static esp_err_t settings_handler(httpd_req_t *req)
     char*  buf;
     size_t buf_len;
 
-    char resp_str[375];
-    sprintf(resp_str, "<!DOCTYPE html><html><head><title>WACT² DRC</title></head><body><h1>Settings</h1><form action='/settings'>Speed:<br><input type='text' name='speed' value='%i'><br><br>Steering Offset:<br><input type='text' name='steering' value='%d'><br><input type='submit' value='Submit'></form><form action='/'><br><br><input type='submit' value='<- BACK'></form></body></html>", robot->max_speed, robot->steering_correction); 
-
     /* Read URL query string length and allocate memory for length + 1,
      * extra byte for null termination */
     buf_len = httpd_req_get_url_query_len(req) + 1;
@@ -77,6 +74,10 @@ static esp_err_t settings_handler(httpd_req_t *req)
         }
         free(buf);
     }
+
+    char resp_str[375];
+    sprintf(resp_str, "<!DOCTYPE html><html><head><title>WACT² DRC</title></head><body><h1>Settings</h1><form action='/settings'>Speed:<br><input type='text' name='speed' value='%i'><br><br>Steering Offset:<br><input type='text' name='steering' value='%d'><br><input type='submit' value='Submit'></form><form action='/'><br><br><input type='submit' value='<- BACK'></form></body></html>", robot->max_speed, robot->steering_correction); 
+
     httpd_resp_send(req, resp_str, strlen(resp_str));
 
     return ESP_OK;
