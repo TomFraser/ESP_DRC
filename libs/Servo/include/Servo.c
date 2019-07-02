@@ -30,15 +30,21 @@ void servo_init(robot_t * robot_) {
 
     vTaskDelay(1000 / portTICK_PERIOD_MS);
 
-    // Arming Sequence
-    mcpwm_set_duty_in_us(MCPWM_UNIT_1, MCPWM_TIMER_1, MCPWM_OPR_A, 1100);
-    vTaskDelay(1000 / portTICK_PERIOD_MS);
+    // // Arming Sequence
+    // mcpwm_set_duty_in_us(MCPWM_UNIT_1, MCPWM_TIMER_1, MCPWM_OPR_A, 1100);
+    // vTaskDelay(1000 / portTICK_PERIOD_MS);
+    // mcpwm_set_duty_in_us(MCPWM_UNIT_1, MCPWM_TIMER_1, MCPWM_OPR_A, 1000);
+    // vTaskDelay(5000 / portTICK_PERIOD_MS);
+
+    // Calibration Sequence
+    mcpwm_set_duty_in_us(MCPWM_UNIT_1, MCPWM_TIMER_1, MCPWM_OPR_A, 2000);
+    vTaskDelay(3000 / portTICK_PERIOD_MS);
     mcpwm_set_duty_in_us(MCPWM_UNIT_1, MCPWM_TIMER_1, MCPWM_OPR_A, 1000);
-    vTaskDelay(5000 / portTICK_PERIOD_MS);
+    vTaskDelay(3000 / portTICK_PERIOD_MS);
 }
 
 void servo_update(control_t * control) {
-    ESP_LOGW("SERVO", "Speed: %i, Steering: %i", control->speed, control->steering);
+    //ESP_LOGW("SERVO", "Speed: %i, Steering: %i", control->speed, control->steering);
 
     if (control->speed > robot->max_speed) {
         control->speed = robot->max_speed;
@@ -46,9 +52,9 @@ void servo_update(control_t * control) {
     if (!robot->stop) {
         control->speed = 0;
     }
-    uint16_t steering = 1500 + 10*(control->steering);
-    uint16_t speed = 1000 + 10*(control->speed);
+    uint16_t steering = 1500 - 10*(control->steering);
+    uint16_t speed = 1000 + 2*(control->speed);
+    //ESP_LOGW("SERVO SET", "Speed: %i, Steering: %i", speed, control->steering);
     mcpwm_set_duty_in_us(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_OPR_A, steering);
     mcpwm_set_duty_in_us(MCPWM_UNIT_1, MCPWM_TIMER_1, MCPWM_OPR_A, speed);
-    vTaskDelay(10);
 }

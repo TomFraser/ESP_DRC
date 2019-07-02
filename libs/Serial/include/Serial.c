@@ -28,6 +28,7 @@ static void uart_init(void);
 // ========================================
 TaskFunction_t uart_rx_task() {
     ESP_LOGI(UART_TAG, "UART Task Created");
+    uint16_t count = 0;
 
     uart_init();
 
@@ -39,6 +40,7 @@ TaskFunction_t uart_rx_task() {
     header.Sync2 = 0x62;
 
     for(;;) {
+        ESP_LOGE("UART Packet Count", "%d", count);
         if(xQueueReceive(uart_queue, (void *) &event, (TickType_t) 1)) {
             switch(event.type) {
                 case UART_DATA:
@@ -74,6 +76,8 @@ TaskFunction_t uart_rx_task() {
                                 } else if (queueMsg.Type == LOG_MESSAGE) {
                                     // Put on Debug Queue
                                 }
+
+                                count++;
                             }
                         }
                         uart_get_buffered_data_len(UART_RP, bufSize);

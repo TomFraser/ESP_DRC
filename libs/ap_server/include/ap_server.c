@@ -73,7 +73,7 @@ static esp_err_t settings_handler(httpd_req_t *req)
                 nvs_close(nvs_data_handle);
             } else if (httpd_query_key_value(buf, "steering", (char *) &value, 4) == ESP_OK) {
                 robot->steering_correction = atoi(value);
-                ESP_LOGE(TAG, "Received speed command: %d", robot->steering_correction);
+                ESP_LOGE(TAG, "Received steering command: %d", robot->steering_correction);
 
                 nvs_open("storage", NVS_READWRITE, &nvs_data_handle);
                 nvs_set_i8(nvs_data_handle, "steering_correction", robot->steering_correction);

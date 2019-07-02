@@ -55,7 +55,7 @@ void app_main()
     nvs_close(nvs_data_handle);
 
     /* Remove those pesky GPIO log messages */
-    esp_log_level_set("*", ESP_LOG_WARN);
+    //esp_log_level_set("*", ESP_LOG_WARN);
 
     ESP_LOGW("INFO", "Main Started\n");
     
@@ -67,6 +67,8 @@ void app_main()
     io_conf.pull_up_en = GPIO_PULLUP_DISABLE;
     gpio_config(&io_conf);
 
+    gpio_set_level(ESP_PWR_CTRL, 1);
+
     io_conf.intr_type = GPIO_PIN_INTR_POSEDGE;
     io_conf.pin_bit_mask = GPIO_INPUT_PIN_SEL;  
     io_conf.mode = GPIO_MODE_INPUT;
@@ -77,8 +79,6 @@ void app_main()
     gpio_install_isr_service(0);
 
     gpio_isr_handler_add(ESP_PWR_BTN, powerBtnHandler, (void *)ESP_PWR_BTN);
-
-    gpio_set_level(ESP_PWR_CTRL, 1);
 
     start_http_server(robot);
 
