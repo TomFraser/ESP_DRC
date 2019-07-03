@@ -18,6 +18,7 @@
 #include "nvs.h"
 
 #include "../../ESP_common.h"
+#include "Servo.h"
 
 static const char *TAG = "http_server";
 
@@ -116,15 +117,17 @@ static esp_err_t home_handler(httpd_req_t *req)
         if (httpd_req_get_url_query_str(req, buf, buf_len) == ESP_OK) {
             char value[2];
             httpd_query_key_value(buf, "start", (char *) &value, 2);
-            value = atoi(value);
-            if (value == 3) {
-                servo_init(robot);
+            uint8_t recv_value = atoi(value);
+            if (recv_value == 3) {
+                mcpwm_set_duty_in_us(MCPWM_UNIT_1, MCPWM_TIMER_1, MCPWM_OPR_A, 2000);
+                vTaskDelay(3000 / portTICK_PERIOD_MS);
+                mcpwm_set_duty_in_us(MCPWM_UNIT_1, MCPWM_TIMER_1, MCPWM_OPR_A, 1000);
+                vTaskDelay(3000 / portTICK_PERIOD_MS);
+                robot->stop = 0;
             }
             else {
-                robot->stop = value;
+                robot->stop = recv_value;
             }
-            
-            robot->stop = value;
             ESP_LOGE(TAG, "Received stop command: %d", robot->stop);
         }
         free(buf);
