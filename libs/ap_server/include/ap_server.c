@@ -30,17 +30,35 @@ static const char *TAG = "http_server";
 #define MAX_STRING_SIZE 50
 
 static EventGroupHandle_t wifi_event_group;
+const int CONNECTED_BIT = BIT0;
 
 static robot_t * robot;
+
+
+/* 
+    Wifi Event Handler
+*/
 
 static esp_err_t event_handler(void *ctx, system_event_t *event)
 {
     switch (event->event_id) {
+        case SYSTEM_EVENT_STA_START:
+            esp_wifi_connect();
+            break;
+        case SYSTEM_EVENT_STA_GOT_IP:
+            xEventGroupSetBits(wifi_event_group, CONNECTED_BIT);
+            break;
+        case SYSTEM_EVENT_STA_DISCONNECTED:
+            /* This is a workaround as ESP32 WiFi libs don't currently
+               auto-reassociate. */
+            esp_wifi_connect();
+            xEventGroupClearBits(wifi_event_group, CONNECTED_BIT);
+            break;
         case SYSTEM_EVENT_AP_STACONNECTED:
-            ESP_LOGW(TAG, "---station joined---");
+            ESP_LOGI(TAG, "---station joined---");
             break;
         case SYSTEM_EVENT_AP_STADISCONNECTED:
-            ESP_LOGW(TAG, "---station leave---");
+            ESP_LOGI(TAG, "---station leave---");
             break;
         default:
             break;
@@ -48,10 +66,16 @@ static esp_err_t event_handler(void *ctx, system_event_t *event)
     return ESP_OK;
 }
 
-char terminal[NUMBER_OF_STRING][MAX_STRING_SIZE] = {"WACT² DRC"};
+
+
+
+
 /* 
  * handlers for the web server.
  */
+
+char terminal[NUMBER_OF_STRING][MAX_STRING_SIZE] = {"WACT² DRC"};
+
 static esp_err_t settings_handler(httpd_req_t *req)
 {
     char*  buf;
@@ -108,10 +132,11 @@ static esp_err_t home_handler(httpd_req_t *req)
     size_t buf_len;
 
     const char* resp_str = "<!DOCTYPE html><html><head><title>WACT² DRC</title></head><body><h1 style='font-size: 50px; text-align: center;'>Home</h1><form style='font-align:center;' action='/'><input type='hidden' name='start' value='1'><input style='background: #48A9A6; color: white; border-style: solid; border-color: #48A9A6; height: 20%; width: 100%; font: bold 50px arial, sans-serif; text-shadow:none;' type='submit' value='START'></form><br><br><form action='/'><input type='hidden' name='start' value='2'><input style='background: #D62839; color: white; border-style: solid; border-color: #D62839; height: 20%; width: 100%; font: bold 50px arial, sans-serif; text-shadow:none;' type='submit' value='PAUSE'><br><br><form action='/'><input type='hidden' name='start' value='0'><input style='background: #D62839; color: white; border-style: solid; border-color: #D62839; height: 20%; width: 100%; font: bold 50px arial, sans-serif; text-shadow:none;' type='submit' value='STOP'></form><br><br><form action='/settings'><input style='background: #175676; color: white; border-style: solid; border-color: #175676; height: 20%; width: 100%; font: bold 50px arial, sans-serif; text-shadow:none;' type='submit' value='SETTINGS'></form><br><br><form action='/'><input type='hidden' name='start' value='3'><input style='background: #D62839; color: white; border-style: solid; border-color: #D62839; height: 20%; width: 100%; font: bold 50px arial, sans-serif; text-shadow:none;' type='submit' value='CALIB ESC'><br><br><form action='/term'><input style='background: #885053; color: white; border-style: solid; border-color: #885053; height: 20%; width: 100%; font: bold 50px arial, sans-serif; text-shadow:none;' type='submit' value='TERMINAL'></form></body></html>";
-    
+
     /* Read URL query string length and allocate memory for length + 1,
      * extra byte for null termination */
     buf_len = httpd_req_get_url_query_len(req) + 1;
+
     if (buf_len > 1) {
         buf = malloc(buf_len);
         if (httpd_req_get_url_query_str(req, buf, buf_len) == ESP_OK) {
@@ -164,19 +189,23 @@ static httpd_handle_t start_webserver(void)
     };
 
     // Start the httpd server
-    ESP_LOGI(TAG, "Starting server on port: '%d'", config.server_port);
+    ESP_LOGW(TAG, "Starting server on port: '%d'", config.server_port);
     if (httpd_start(&server, &config) == ESP_OK) {
         // Set URI handlers
-        ESP_LOGI(TAG, "Registering URI handlers");
+        ESP_LOGW(TAG, "Registering URI handlers");
         httpd_register_uri_handler(server, &settings);
         httpd_register_uri_handler(server, &terminal);
         httpd_register_uri_handler(server, &uri_home);
         return server;
     }
 
-    ESP_LOGI(TAG, "Error starting server!");
+    ESP_LOGE(TAG, "Error starting server!");
     return NULL;
 }
+
+
+
+
 
 /*
     AP Mode
@@ -201,7 +230,7 @@ static void initialise_wifi(void)
     initialized = true;
 }
 
-void wifi_init_softap()
+void wifi_init()
 {
     initialise_wifi();
     wifi_config_t wifi_config = {
@@ -222,13 +251,62 @@ void wifi_init_softap()
     ESP_LOGI(TAG, "wifi_init_softap finished. SSID:%s password:%s\n", ESP_WIFI_SSID, ESP_WIFI_PASS);
 }
 
+
+/*
+    Client Mode
+*/
+
+bool wifi_join(const char *ssid, const char *pass, int timeout_ms)
+{
+    wifi_config_t wifi_config = { 0 };
+    strncpy((char *) wifi_config.sta.ssid, ssid, sizeof(wifi_config.sta.ssid));
+    if (pass) {
+        strncpy((char *) wifi_config.sta.password, pass, sizeof(wifi_config.sta.password));
+    }
+
+    ESP_ERROR_CHECK( esp_wifi_set_mode(WIFI_MODE_STA) );
+    ESP_ERROR_CHECK( esp_wifi_set_config(ESP_IF_WIFI_STA, &wifi_config) );
+    ESP_ERROR_CHECK( esp_wifi_connect() );
+    
+    ESP_LOGI(TAG, "try to connect to ap SSID:%s password:%s", ssid, pass);
+    int bits = xEventGroupWaitBits(wifi_event_group, CONNECTED_BIT,
+                                   pdFALSE, pdTRUE, timeout_ms / portTICK_PERIOD_MS);
+    return (bits & CONNECTED_BIT) != 0;
+}
+
+bool wifi_connect(robot_t * robot_)
+{
+    robot = robot_;
+  
+    esp_err_t ret = nvs_flash_init();
+    if (ret == ESP_ERR_NVS_NO_FREE_PAGES || ret == ESP_ERR_NVS_NEW_VERSION_FOUND) {
+      ESP_ERROR_CHECK(nvs_flash_erase());
+      ret = nvs_flash_init();
+    }
+    ESP_ERROR_CHECK(ret);
+
+    initialise_wifi();
+    // check wifi connected already
+    int bits = xEventGroupWaitBits(wifi_event_group, CONNECTED_BIT,
+                                   pdFALSE, pdTRUE, 300 / portTICK_PERIOD_MS);
+    if((bits & CONNECTED_BIT) != 0)
+        return true;
+
+    if(wifi_join("WACT^2 Router", "YeetYeet", 10000)) {
+        start_webserver();
+        return true;
+    }
+
+    return false;
+}
+
 // ==================================================================================================
-//          Start http server for wifi config setting
+//          Start http server
 // ==================================================================================================
 void start_http_server(robot_t * robot_)
 {
     robot = robot_;
 
-    wifi_init_softap();
+    wifi_init();
     start_webserver();
 }

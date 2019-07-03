@@ -45,17 +45,8 @@ static void IRAM_ATTR powerBtnHandler(void* arg) {
 
 void app_main()
 {
-    robot_t * robot = (robot_t *) malloc(sizeof(robot_t));
-        robot->stop = 0;
-
-    nvs_flash_init();
-    nvs_open("storage", NVS_READWRITE, &nvs_data_handle);
-    nvs_get_i8(nvs_data_handle, "steering_correction", &(robot->steering_correction));
-    nvs_get_i8(nvs_data_handle, "speed_max", &(robot->max_speed));
-    nvs_close(nvs_data_handle);
-
     /* Remove those pesky GPIO log messages */
-    //esp_log_level_set("*", ESP_LOG_WARN);
+    esp_log_level_set("*", ESP_LOG_WARN);
 
     ESP_LOGW("INFO", "Main Started\n");
     
@@ -80,7 +71,22 @@ void app_main()
 
     gpio_isr_handler_add(ESP_PWR_BTN, powerBtnHandler, (void *)ESP_PWR_BTN);
 
-    start_http_server(robot);
+    robot_t * robot = (robot_t *) malloc(sizeof(robot_t));
+        robot->stop = 0;
+
+    nvs_flash_init();
+    nvs_open("storage", NVS_READWRITE, &nvs_data_handle);
+    nvs_get_i8(nvs_data_handle, "steering_correction", &(robot->steering_correction));
+    nvs_get_i8(nvs_data_handle, "speed_max", &(robot->max_speed));
+    nvs_close(nvs_data_handle);
+
+    if(wifi_connect(robot)) {
+        ESP_LOGE("WIFI", "Successfully connected");
+    } else {
+        ESP_LOGE("WIFI", "Failed to connect");
+    }
+
+    //start_http_server(robot);
 
     servo_init(robot);
 
