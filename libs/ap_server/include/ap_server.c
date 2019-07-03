@@ -106,7 +106,7 @@ static esp_err_t home_handler(httpd_req_t *req)
     char*  buf;
     size_t buf_len;
 
-    const char* resp_str = "<!DOCTYPE html><html><head><title>WACT² DRC</title></head><body><h1 style='font-size: 50px; text-align: center;'>Home</h1><form style='font-align:center;' action='/'><input type='hidden' name='start' value='1'><input style='background: #48A9A6; color: white; border-style: solid; border-color: #48A9A6; height: 20%; width: 100%; font: bold 50px arial, sans-serif; text-shadow:none;' type='submit' value='START'></form><br><br><form action='/'><input type='hidden' name='start' value='0'><input style='background: #D62839; color: white; border-style: solid; border-color: #D62839; height: 20%; width: 100%; font: bold 50px arial, sans-serif; text-shadow:none;' type='submit' value='STOP'></form><br><br><form action='/settings'><input style='background: #175676; color: white; border-style: solid; border-color: #175676; height: 20%; width: 100%; font: bold 50px arial, sans-serif; text-shadow:none;' type='submit' value='SETTINGS'></form><br><br><form action='/term'><input style='background: #885053; color: white; border-style: solid; border-color: #885053; height: 20%; width: 100%; font: bold 50px arial, sans-serif; text-shadow:none;' type='submit' value='TERMINAL'></form></body></html>";
+    const char* resp_str = "<!DOCTYPE html><html><head><title>WACT² DRC</title></head><body><h1 style='font-size: 50px; text-align: center;'>Home</h1><form style='font-align:center;' action='/'><input type='hidden' name='start' value='1'><input style='background: #48A9A6; color: white; border-style: solid; border-color: #48A9A6; height: 20%; width: 100%; font: bold 50px arial, sans-serif; text-shadow:none;' type='submit' value='START'></form><br><br><form action='/'><input type='hidden' name='start' value='2'><input style='background: #D62839; color: white; border-style: solid; border-color: #D62839; height: 20%; width: 100%; font: bold 50px arial, sans-serif; text-shadow:none;' type='submit' value='PAUSE'><br><br><form action='/'><input type='hidden' name='start' value='0'><input style='background: #D62839; color: white; border-style: solid; border-color: #D62839; height: 20%; width: 100%; font: bold 50px arial, sans-serif; text-shadow:none;' type='submit' value='STOP'></form><br><br><form action='/settings'><input style='background: #175676; color: white; border-style: solid; border-color: #175676; height: 20%; width: 100%; font: bold 50px arial, sans-serif; text-shadow:none;' type='submit' value='SETTINGS'></form><br><br><form action='/'><input type='hidden' name='start' value='3'><input style='background: #D62839; color: white; border-style: solid; border-color: #D62839; height: 20%; width: 100%; font: bold 50px arial, sans-serif; text-shadow:none;' type='submit' value='CALIB ESC'><br><br><form action='/term'><input style='background: #885053; color: white; border-style: solid; border-color: #885053; height: 20%; width: 100%; font: bold 50px arial, sans-serif; text-shadow:none;' type='submit' value='TERMINAL'></form></body></html>";
     
     /* Read URL query string length and allocate memory for length + 1,
      * extra byte for null termination */
@@ -116,7 +116,15 @@ static esp_err_t home_handler(httpd_req_t *req)
         if (httpd_req_get_url_query_str(req, buf, buf_len) == ESP_OK) {
             char value[2];
             httpd_query_key_value(buf, "start", (char *) &value, 2);
-            robot->stop = atoi(value);
+            value = atoi(value);
+            if (value == 3) {
+                servo_init(robot);
+            }
+            else {
+                robot->stop = value;
+            }
+            
+            robot->stop = value;
             ESP_LOGE(TAG, "Received stop command: %d", robot->stop);
         }
         free(buf);
