@@ -52,7 +52,7 @@ void servo_update(control_t * control) {
     if (!robot->stop) {
         control->speed = 0;
     }
-    uint16_t steering = 1500 - 10*(control->steering);
+    uint16_t steering = 1500 - 5.555555*(control->steering);
     uint16_t speed = 1000 + 2*(control->speed);
     //ESP_LOGW("SERVO SET", "Speed: %i, Steering: %i", speed, control->steering);
     mcpwm_set_duty_in_us(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_OPR_A, steering);
