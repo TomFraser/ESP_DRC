@@ -32,7 +32,7 @@
 typedef struct control {
 
     int8_t steering;
-    uint8_t speed;
+    int8_t speed;
 
 }   control_t;
 
@@ -40,7 +40,8 @@ typedef struct robot {
 
     uint8_t stop;
     int8_t max_speed;
-    int8_t steering_correction;
+    int32_t boost;
+    int64_t boost_time;
 
 }   robot_t;
 

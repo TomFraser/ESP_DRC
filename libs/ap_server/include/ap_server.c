@@ -87,8 +87,8 @@ static esp_err_t settings_handler(httpd_req_t *req)
     if (buf_len > 1) {
         buf = malloc(buf_len);
         if (httpd_req_get_url_query_str(req, buf, buf_len) == ESP_OK) {            
-            char value[4];
-            if (httpd_query_key_value(buf, "speed", (char *) &value, 4) == ESP_OK) {
+            char value[5];
+            if (httpd_query_key_value(buf, "speed", (char *) &value, 5) == ESP_OK) {
                 robot->max_speed = atoi(value);
                 ESP_LOGE(TAG, "Received speed command: %d", robot->max_speed);
 
@@ -96,12 +96,13 @@ static esp_err_t settings_handler(httpd_req_t *req)
                 nvs_set_i8(nvs_data_handle, "speed_max", robot->max_speed);
                 nvs_commit(nvs_data_handle);
                 nvs_close(nvs_data_handle);
-            } else if (httpd_query_key_value(buf, "steering", (char *) &value, 4) == ESP_OK) {
-                robot->steering_correction = atoi(value);
-                ESP_LOGE(TAG, "Received steering command: %d", robot->steering_correction);
+            }
+            if (httpd_query_key_value(buf, "steering", (char *) &value, 5) == ESP_OK) {
+                robot->boost = atoi(value) * 1000;
+                ESP_LOGE(TAG, "Received boost command: %d", robot->boost);
 
                 nvs_open("storage", NVS_READWRITE, &nvs_data_handle);
-                nvs_set_i8(nvs_data_handle, "steering_correction", robot->steering_correction);
+                nvs_set_i32(nvs_data_handle, "steering_correction", robot->boost);
                 nvs_commit(nvs_data_handle);
                 nvs_close(nvs_data_handle);
             }
@@ -110,7 +111,7 @@ static esp_err_t settings_handler(httpd_req_t *req)
     }
 
     char resp_str[375];
-    sprintf(resp_str, "<!DOCTYPE html><html><head><title>WACT² DRC</title></head><body><h1>Settings</h1><form action='/settings'>Speed:<br><input type='text' name='speed' value='%i'><br><br>Steering Offset:<br><input type='text' name='steering' value='%d'><br><input type='submit' value='Submit'></form><form action='/'><br><br><input type='submit' value='<- BACK'></form></body></html>", robot->max_speed, robot->steering_correction); 
+    sprintf(resp_str, "<!DOCTYPE html><html><head><title>WACT² DRC</title></head><body><h1>Settings</h1><form action='/settings'>Speed:<br><input type='text' name='speed' value='%i'><br><br>Steering Offset:<br><input type='text' name='steering' value='%d'><br><input type='submit' value='Submit'></form><form action='/'><br><br><input type='submit' value='<- BACK'></form></body></html>", robot->max_speed, robot->boost / 1000); 
 
     httpd_resp_send(req, resp_str, strlen(resp_str));
 
@@ -149,6 +150,10 @@ static esp_err_t home_handler(httpd_req_t *req)
                 mcpwm_set_duty_in_us(MCPWM_UNIT_1, MCPWM_TIMER_1, MCPWM_OPR_A, 1000);
                 vTaskDelay(3000 / portTICK_PERIOD_MS);
                 robot->stop = 0;
+            }
+            else if (recv_value == 2) {
+                robot->boost_time = esp_timer_get_time();
+                robot->stop = 1;
             }
             else {
                 robot->stop = recv_value;

@@ -44,17 +44,27 @@ void servo_init(robot_t * robot_) {
 }
 
 void servo_update(control_t * control) {
-    //ESP_LOGW("SERVO", "Speed: %i, Steering: %i", control->speed, control->steering);
+    double speed_factor = robot->max_speed / 100.0;
+    speed_factor = 2.5 * speed_factor;
+    double correction = (control->speed) * speed_factor;
 
-    if (control->speed > robot->max_speed) {
-        control->speed = robot->max_speed;
-    }
-    if (!robot->stop) {
-        control->speed = 0;
-    }
+    ESP_LOGW("SERVO", "Speed: %i, Steering: %i, Correction: %f, Max Speed: %d, Speed Factor: %f", control->speed, control->steering, correction, robot->max_speed, speed_factor);
+
     uint16_t steering = 1500 - 5.555555*(control->steering);
-    uint16_t speed = 1000 + 2*(control->speed);
-    //ESP_LOGW("SERVO SET", "Speed: %i, Steering: %i", speed, control->steering);
+    uint16_t speed = 1100 + correction;
+
+    ESP_LOGE("BOOST", "%i < %i", (int) robot->boost_time + robot->boost, (int) esp_timer_get_time());
+
+    if (control->speed == -1) {
+        robot->stop = 0;
+    }
+
+    if (!robot->stop || control->speed == 0) {
+        speed = 1000;
+    } else if ((robot->boost_time + robot->boost) > esp_timer_get_time()) {
+        speed = 1400;
+    }
+    ESP_LOGW("SERVO SET", "Speed: %i, Steering: %i", speed, control->steering);
     mcpwm_set_duty_in_us(MCPWM_UNIT_0, MCPWM_TIMER_0, MCPWM_OPR_A, steering);
     mcpwm_set_duty_in_us(MCPWM_UNIT_1, MCPWM_TIMER_1, MCPWM_OPR_A, speed);
 }

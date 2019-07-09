@@ -1,11 +1,3 @@
-/* Hello World Example
-
-   This example code is in the Public Domain (or CC0 licensed, at your option.)
-
-   Unless required by applicable law or agreed to in writing, this
-   software is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR
-   CONDITIONS OF ANY KIND, either express or implied.
-*/
 #define DEBUG false
 
 #include <stdio.h>
@@ -73,10 +65,11 @@ void app_main()
 
     robot_t * robot = (robot_t *) malloc(sizeof(robot_t));
         robot->stop = 0;
+        robot->boost_time = 0;
 
     nvs_flash_init();
     nvs_open("storage", NVS_READWRITE, &nvs_data_handle);
-    nvs_get_i8(nvs_data_handle, "steering_correction", &(robot->steering_correction));
+    nvs_get_i32(nvs_data_handle, "steering_correction", &(robot->boost));
     nvs_get_i8(nvs_data_handle, "speed_max", &(robot->max_speed));
     nvs_close(nvs_data_handle);
 
